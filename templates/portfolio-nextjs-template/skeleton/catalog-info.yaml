@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  title: Portfolio de ${{ values.fullName }}
+  description: Portfolio Next.js conteneurisé, livré via Backstage, GitHub Actions et Docker Hub.
+  annotations:
+    github.com/project-slug: ${{ values.repoOwner }}/${{ values.name }}
+    backstage.io/source-location: url:https://github.com/${{ values.repoOwner }}/${{ values.name }}/
+  tags: [nextjs, docker, portfolio]
+  links:
+    - url: http://localhost:3000
+      title: Application (déploiement local)
+      icon: web
+    - url: https://hub.docker.com/r/${{ values.dockerhubUser }}/${{ values.imageName }}/tags
+      title: Image Docker Hub
+      icon: dashboard
+spec:
+  type: website
+  lifecycle: experimental
+  owner: ${{ values.owner }}

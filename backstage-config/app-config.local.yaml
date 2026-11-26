@@ -1,0 +1,59 @@
+# =====================================================================
+#  Surcharges locales (ignoré par Git). Aucun secret en clair :
+#  ${GITHUB_TOKEN} est lu depuis une variable d'environnement.
+# =====================================================================
+app:
+  title: IDP Portfolio – Amal Jemli
+  baseUrl: http://localhost:3001       # le Portfolio garde le port 3000
+  listen:
+    host: 0.0.0.0                      # accessible via la redirection VirtualBox
+    port: 3001
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    host: 0.0.0.0
+    port: 7007
+  cors:
+    origin: http://localhost:3001
+  # Base persistante sur disque (au lieu de ':memory:') : le catalogue et
+  # l'historique des tâches survivent aux redémarrages de Backstage
+  database:
+    client: better-sqlite3
+    connection:
+      directory: /home/amal/activite-backstage/backstage-data
+
+organization:
+  name: ISET Tozeur – Master DevOps & Cloud
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+# Connexion GitHub (OAuth App) : permet au plugin GitHub Actions
+# de lire les runs au nom de l'utilisateur (statut du build dans Backstage)
+auth:
+  environment: development
+  providers:
+    guest: {}
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+catalog:
+  # Les tableaux ne fusionnent pas : cette liste REMPLACE celle d'app-config.yaml
+  locations:
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../templates/portfolio-nextjs-template/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../templates/portfolio-deliver/template.yaml
+      rules:
+        - allow: [Template]

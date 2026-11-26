@@ -1,0 +1,65 @@
+# =====================================================================
+#  Software Template Backstage : portfolio-deliver
+#  Déclenche depuis Backstage le pipeline de livraison du portfolio :
+#  récupération du code -> build -> image vN -> Docker Hub -> docker compose -> health check
+# =====================================================================
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: portfolio-deliver
+  title: Livrer le Portfolio (build, push, déploiement)
+  description: >-
+    Déclenche le workflow GitHub Actions "deliver.yml" du portfolio choisi :
+    build de l'image Docker versionnée, publication sur Docker Hub,
+    déploiement local avec docker compose et vérification de santé.
+  tags: [delivery, docker, github-actions, golden-path]
+spec:
+  owner: user:default/guest
+  type: pipeline
+
+  parameters:
+    - title: Que livrer ?
+      required: [repoUrl, version]
+      properties:
+        repoUrl:
+          title: Dépôt du portfolio
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts: [github.com]
+            allowedOwners: [Amal356]
+        version:
+          title: Version de l'image
+          description: Convention v<majeur>[.<mineur>] — ex. v1, v2, v1.1
+          type: string
+          default: v1
+          pattern: '^v[0-9]+(\.[0-9]+)*$'
+
+  steps:
+    - id: dispatch
+      name: Déclencher le pipeline de livraison
+      action: github:actions:dispatch
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        workflowId: deliver.yml
+        branchOrTagName: main
+        workflowInputs:
+          version: ${{ parameters.version }}
+        returnWorkflowRunDetails: true
+
+  output:
+    text:
+      - title: Livraison lancée
+        content: |
+          Image : **amal878/portfolio-nextjs:${{ parameters.version }}**
+
+          Suivez le statut dans l'onglet **CI/CD** du composant, puis ouvrez
+          l'application sur http://localhost:3000
+    links:
+      - title: Suivre le run GitHub Actions
+        url: ${{ steps.dispatch.output.workflowRunHtmlUrl }}
+      - title: Composant dans le catalogue (onglet CI/CD)
+        icon: catalog
+        entityRef: component:default/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+      - title: Application (http://localhost:3000)
+        url: http://localhost:3000
